@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Project</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Library Project</h1>
+
+<form id="searchForm">
+    <label for="authorName">Author Name:</label>
+    <input type="text" id="authorName" name="authorName">
+
+    <label for="bookTitle">Book Title:</label>
+    <input type="text" id="bookTitle" name="bookTitle">
+
+    <label for="bookGenre">Book Genre:</label>
+    <input type="text" id="bookGenre" name="bookGenre">
+
+    <label for="yearOfPublish">Year of Publish:</label>
+    <input type="text" id="yearOfPublish" name="yearOfPublish">
+
+    <button type="button" onclick="searchBooks()">Search Books</button>
+</form>
+
+<table id="booksTable">
+    <thead>
+    <tr>
+        <th>Book ID</th>
+        <th>Author</th>
+        <th>Title</th>
+        <th>Genre</th>
+        <th>Year of Publish</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Book data will be displayed here -->
+    </tbody>
+</table>
+
+<script>
+    function searchBooks() {
+        const authorName = document.getElementById("authorName").value;
+        const bookTitle = document.getElementById("bookTitle").value;
+        const bookGenre = document.getElementById("bookGenre").value;
+        const yearOfPublish = document.getElementById("yearOfPublish").value;
+
+        const queryParams = new URLSearchParams({
+            authorName: authorName,
+            bookTitle: bookTitle,
+            bookGenre: bookGenre,
+            yearOfPublish: yearOfPublish
+        });
+
+        fetch(`http://localhost:8080/books?${queryParams}`)
+            .then(response => response.json())
+            .then(data => displayBooks(data))
+            .catch(error => console.error('Error:', error));
+    }
+
+    function displayBooks(books) {
+        const tableBody = document.querySelector("#booksTable tbody");
+        tableBody.innerHTML = '';
+
+        books.forEach(book => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = book.bookId;
+            row.insertCell(1).textContent = book.author;
+            row.insertCell(2).textContent = book.bookTitle;
+            row.insertCell(3).textContent = book.bookGenre;
+            row.insertCell(4).textContent = book.yearOfPublish;
+        });
+    }
+</script>
+
+</body>
+</html>

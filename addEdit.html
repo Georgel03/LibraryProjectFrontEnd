@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="stylebook.css">
+    <title>Add/Edit Book</title>
+</head>
+<body>
+
+<h2>Add/Edit Book</h2>
+
+<!-- Add/Edit Book Form -->
+<form id="addEditBookForm">
+    <label for="author">Author:</label>
+    <input type="text" id="author" name="author" required />
+
+    <label for="title">Title:</label>
+    <input type="text" id="title" name="title" required />
+
+    <label for="genre">Genre:</label>
+    <input type="text" id="genre" name="genre" required />
+
+    <label for="year">Year of Publish:</label>
+    <input type="number" id="year" name="year" required />
+
+    <button onclick="saveBook()">Save Book</button>
+</form>
+
+<script>
+    const apiUrl = "http://localhost:8080"; // Replace with your actual API URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookId = urlParams.get("bookId");
+
+    
+
+    const fullUrl = window.location.href;
+    const baseUrl = new URL(fullUrl).origin;
+
+    // Function to fetch book details for editing
+    function fetchBookDetails() {
+        if (bookId) {
+            fetch(`${apiUrl}/books/${bookId}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    // Populate form fields with book details
+                    document.getElementById("author").value = data.author;
+                    document.getElementById("title").value = data.bookTitle;
+                    document.getElementById("genre").value = data.bookGenre;
+                    document.getElementById("year").value = data.yearOfPublish;
+                })
+                
+                .catch((error) => console.error("Error fetching book details:", error));
+        }
+
+        console.log(bookId);
+    }
+    
+    // Function to save or update a book
+    function saveBook() {
+
+    event.preventDefault();
+    const bookData = {
+        author: document.getElementById("author").value,
+        bookTitle: document.getElementById("title").value,
+        bookGenre: document.getElementById("genre").value,
+        yearOfPublish: parseInt(document.getElementById("year").value),
+    };
+
+    const method =  "PUT" ;
+    const url = `${apiUrl}/books/${bookId}`;
+
+    fetch(url, {
+        method: method,
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bookData),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Book saved:", data);
+            // Redirect to the index.html page after saving the book
+            const baseUrl = new URL(window.location.href).origin;
+            window.location.href = `${baseUrl}/index.html`;
+        })
+        .catch((error) => console.error("Error saving book:", error));
+}
+
+    // Fetch book details on page load for editing
+    window.onload = fetchBookDetails;
+
+</script>
+</body>
+</html>

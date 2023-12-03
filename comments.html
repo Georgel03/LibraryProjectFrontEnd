@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="stylecomments.css">
+    <title>Book Comments</title>
+</head>
+<body>
+    <h2>Book Comments</h2>
+
+    <!-- Comments Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Comment Type</th>
+                <th>Content</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="commentTableBody">
+            <!-- Populate table dynamically using JavaScript -->
+        </tbody>
+    </table>
+
+    <!-- Add Comment Form -->
+    <form id="addCommentForm">
+        <label for="commentType">Comment Type:</label>
+        <select id="commentType" name="commentType" required>
+            <option value="TEMASIVIZUNE">TEMASIVIZUNE</option>
+            <option value="CARACTERIZARE">CARACTERIZARE</option>
+            <option value="RELATIIPERSONAJE">RELATIIPERSONAJE</option>
+        </select>
+
+        <label for="content">Content:</label>
+        <textarea id="content" name="content" rows="4" required></textarea>
+
+        <button onclick="addComment()">Add Comment</button>
+    </form>
+
+    <script>
+        const apiUrl = "http://localhost:8080";
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get("bookId");
+
+        // Function to fetch and display comments for a specific book
+        function fetchComments() {
+            fetch(`${apiUrl}/comments/book/${bookId}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    const tableBody = document.getElementById("commentTableBody");
+                    tableBody.innerHTML = ""; // Clear existing table rows
+
+                    data.forEach((comment) => {
+                        const row = `<tr>
+                            <td>${comment.id}</td>
+                            <td>${comment.commentType}</td>
+                            <td>${comment.content}</td>
+                            <td>
+                                <button onclick="editComment(${comment.id})">Edit</button>
+                                <button onclick="deleteComment(${comment.id})">Delete</button>
+                            </td>
+                        </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+                })
+                .catch((error) => console.error("Error fetching comments:", error));
+        }
+
+        // Function to add a new comment
+        function addComment() {
+            event.preventDefault();
+            const commentData = {
+                bookId: bookId,  // Include the bookId in the comment data
+                commentType: document.getElementById("commentType").value,
+                content: document.getElementById("content").value,
+            };
+
+            fetch(`${apiUrl}/comments/${bookId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(commentData),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log("Comment added:", data);
+                    document.getElementById("addCommentForm").reset();
+                    fetchComments();
+                })
+                .catch((error) => console.error("Error adding comment:", error));
+        }
+
+        // Function to edit a comment
+        function editComment(commentId) {
+            // Redirect to the editComment page, similar to the book edit page
+            const url = `editComment.html?bookId=${bookId}&commentId=${commentId}`;
+            window.location.href = url;
+        }
+
+        // Function to delete a comment
+        function deleteComment(commentId) {
+            fetch(`${apiUrl}/comments/${commentId}`, {
+                method: "DELETE",
+            })
+                .then((response) => {
+                    if (response.status === 200) {
+                        // Comment deleted successfully
+                        console.log("Comment deleted successfully");
+                        fetchComments(); // Refresh the table
+                    } else {
+                        // Handle other status codes if needed
+                        console.error("Failed to delete comment. Status:", response.status);
+                    }
+                })
+                .catch((error) => console.error("Error deleting comment:", error));
+        }
+
+        // Fetch comments on page load
+        window.onload = fetchComments;
+    </script>
+</body>
+</html>
